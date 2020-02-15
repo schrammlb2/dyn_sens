@@ -115,8 +115,8 @@ def objective(trial):
   return -train_td3(penalty=True, epsilon=epsilon)#, actor_LEARNING_RATE=actor_LEARNING_RATE, critic_LEARNING_RATE=critic_LEARNING_RATE)
 
 # train_td3(penalty=True, epsilon=.05)
-# study = optuna.create_study()
-study = optuna.load_study(study_name='distributed-example', storage='sqlite:///example.db')
+study = optuna.create_study()
+# study = optuna.load_study(study_name='distributed-example', storage='sqlite:///example.db')
 study.optimize(objective, n_trials=100)
 
 print(study.best_params)
