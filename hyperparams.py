@@ -25,3 +25,7 @@ TRACE_DECAY = 0.97
 UPDATE_INTERVAL = 1
 UPDATE_START = 10000
 TEST_INTERVAL = 1000
+
+
+import torch
+CUDA = torch.cuda.is_available()
