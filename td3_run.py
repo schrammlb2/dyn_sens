@@ -18,7 +18,7 @@ state_dim = 17
 action_dim=6
 
 
-MAX_STEPS = 15000
+# MAX_STEPS = 15000
 
 
 def test(actor):
