@@ -9,7 +9,7 @@ from hyperparams import *
 from env import Env#, Walker2dEnv_Mod
 # from models import Actor, Critic, create_target_network, update_target_network
 from generalized_models import Actor, Critic, create_target_network, update_target_network
-from utils import plot, mean
+from utils import *
 from gradient_penalty import gradient_penalty
 import optuna
 import pdb
@@ -141,7 +141,8 @@ def train_td3(penalty = False, epsilon=.03, actor_LEARNING_RATE=LEARNING_RATE, c
       # plot_static(steps, rewards, 'td3_'+env_name+('_penalty' if penalty else ''))
       # plot_static(step, transfer_rewards, 'td3_'+env_name+('_penalty' if penalty else ''))
       actor.train()
-  return rewards, transfer_rewards
+  # pdb.set_trace()
+  return rewards, transfer_rewards#, steps
 
 
 def objective(trial):
@@ -168,9 +169,6 @@ def evaluate(penalty=True):
   train_rewards = []
   test_rewards = []
 
-  steps = [i for i in range(UPDATE_START, MAX_STEPS ,UPDATE_INTERVAL)]
-
-  # [train_parallel.remote() for i in range(samples)]
   if MULTIPROCESSING:
     p = mp.Pool(4)
     reward_list = print(p.map(train_td3, [(penalty, .025)]*samples))
@@ -182,23 +180,31 @@ def evaluate(penalty=True):
       train_rewards.append(rewards)
       test_rewards.append(transfer_rewards)
 
-  try: 
-    ave = lambda tr: sum([sum(r) for r in tr])/(len(tr)*len(len(tr)))
-  except:
-    try: 
-      ave = lambda tr: mean([mean(r) for r in tr])
-    except:
-      ave = lambda tr: "Error. Averaging method failed"
-
+  #recursive averaging
+  ave = lambda tr: np.mean(np.array(tr))
   title = 'td3_'+env_name+('_penalty' if penalty else '')
   print(title)
   print(ave(train_rewards))
-  plot_with_error_bars(steps, train_rewards, title)
 
-  title = 'td3_transfer_'+env_name+('_penalty' if penalty else '')
-  plot_with_error_bars(steps, test_rewards, title)
   print(title)
   print(ave(test_rewards))
+
+  return train_rewards, test_rewards
+
+def compare():
+  steps = [i for i in range(UPDATE_START, MAX_STEPS,TEST_INTERVAL)]
+  steps_list = [steps]*2
+
+  p_train, p_test = evaluate(penalty=True)
+  no_p_train, no_p_test =evaluate(penalty=False)
+
+  train_rewards = [p_train, no_p_train]
+  test_rewards = [p_test, no_p_test]
+  labels = ['penalty', 'no_penalty']
+  multiplot(steps_list, train_rewards, labels)
+  multiplot(steps_list, test_rewards, labels)
+
+
 
 env_dict = {}
 env_dict['walker'] = ('Walker2d-v3', 'mod_envs/walker/', 17, 6)
@@ -222,22 +228,4 @@ DEVICE=torch.device('cuda' if CUDA else 'cpu')
 
 for task in ['halfcheetah','walker']:
   env_name, path, state_dim, action_dim = env_dict[task]
-  evaluate(penalty=True)
-  evaluate(penalty=False)
-
-# p = mp.Pool(4)
-# for task in ['halfcheetah','walker']:
-#   env_name, path, state_dim, action_dim = env_dict[task]
-#   evaluate(penalty=True)
-#   evaluate(penalty=False)
-
-# processes = []
-# for task in ['halfcheetah','walker']:
-#   env_name, path, state_dim, action_dim = env_dict[task]
-#   p_pen = mp.Process(target=evaluate, args=(True,))
-#   p_no_pen = mp.Process(target=evaluate, args=(False,))
-#   p_pen.start()
-#   p_no_pen.start()
-#   processes += [p_pen, p_no_pen]
-# for process in processes:
-#   process.join()
+  compare()
