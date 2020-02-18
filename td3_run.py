@@ -9,7 +9,7 @@ from hyperparams import *
 from env import Env#, Walker2dEnv_Mod
 # from models import Actor, Critic, create_target_network, update_target_network
 from generalized_models import Actor, Critic, create_target_network, update_target_network
-from utils import plot
+from utils import plot, mean
 from gradient_penalty import gradient_penalty
 import optuna
 import pdb
@@ -182,7 +182,13 @@ def evaluate(penalty=True):
       train_rewards.append(rewards)
       test_rewards.append(transfer_rewards)
 
-  ave = lambda tr: sum(sum(tr))/(len(tr)*len(len(tr)))
+  try: 
+    ave = lambda tr: sum([sum(r) for i in tr])/(len(tr)*len(len(tr)))
+  except:
+    try: 
+      ave = lambda tr: mean([mean(r) for i in tr])
+    except:
+      ave = lambda tr: "Error. Averaging method failed"
 
   title = 'td3_'+env_name+('_penalty' if penalty else '')
   print(title)
