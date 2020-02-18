@@ -4,6 +4,7 @@ import torch
 import numpy as np
 from gym import utils
 from hyperparams import *
+from modified_envs import *
 
 
 class Env():
@@ -12,7 +13,14 @@ class Env():
     if xml_file is None:
       self._env = gym.make(name)
     else: 
-      self._env = gym.make(name, xml_file=xml_file)
+      try:
+        self._env = gym.make(name, xml_file=xml_file)
+      except:
+        if 'InvertedPendulum' in name:
+          self._env=InvertedPendulumEnv_Mod(xml_file)
+        else:
+          #Other environments go here
+          pass
     
   def reset(self):
     state = self._env.reset()

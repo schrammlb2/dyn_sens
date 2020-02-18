@@ -183,10 +183,10 @@ def evaluate(penalty=True):
       test_rewards.append(transfer_rewards)
 
   try: 
-    ave = lambda tr: sum([sum(r) for i in tr])/(len(tr)*len(len(tr)))
+    ave = lambda tr: sum([sum(r) for r in tr])/(len(tr)*len(len(tr)))
   except:
     try: 
-      ave = lambda tr: mean([mean(r) for i in tr])
+      ave = lambda tr: mean([mean(r) for r in tr])
     except:
       ave = lambda tr: "Error. Averaging method failed"
 
