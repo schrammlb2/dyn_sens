@@ -13,11 +13,14 @@ from utils import plot
 from gradient_penalty import gradient_penalty
 import optuna
 import pdb
+import torch.multiprocessing as mp
 
 
 # MAX_STEPS = 15000
-
-
+# try: 
+#   mp.set_start_method("spawn")
+# except:
+#   pass
 def test(actor):
   with torch.no_grad():
     env = Env(env_name)
@@ -79,8 +82,9 @@ def train_td3(penalty = False, epsilon=.03, actor_LEARNING_RATE=LEARNING_RATE, c
         # action = torch.tensor([[2 * random.random() - 1]])
         action = env.sample_action()
       else:
+        # pdb.set_trace()
         # Observe state s and select action a = clip(μ(s) + ε, a_low, a_high)
-        action = torch.clamp(actor(state) + ACTION_NOISE * torch.randn(1, 1), min=-1, max=1)
+        action = torch.clamp(actor(state) + ACTION_NOISE * torch.randn(1, 1, device=DEVICE), min=-1, max=1)
       # Execute a in the environment and observe next state s', reward r, and done signal d to indicate whether s' is terminal
       next_state, reward, done = env.step(action)
       # Store (s, a, r, s', d) in replay buffer D
@@ -129,6 +133,7 @@ def train_td3(penalty = False, epsilon=.03, actor_LEARNING_RATE=LEARNING_RATE, c
       actor.eval()
       total_reward = test(actor)
       total_transfer_reward = test_transfer(actor, path)
+      # if not MULTIPROCESSING:
       pbar.set_description('Step: %i | Reward: %f | Transfer Reward: %f' % (step, total_reward, total_transfer_reward))
       steps.append(step)
       rewards.append(total_reward)
@@ -166,16 +171,28 @@ def evaluate(penalty=True):
   steps = [i for i in range(UPDATE_START, MAX_STEPS ,UPDATE_INTERVAL)]
 
   # [train_parallel.remote() for i in range(samples)]
-  for i in range(samples):
-    rewards, transfer_rewards= train_td3(penalty=penalty, epsilon=.025)
-    train_rewards.append(rewards)
-    test_rewards.append(transfer_rewards)
+  if MULTIPROCESSING:
+    p = mp.Pool(4)
+    reward_list = print(p.map(train_td3, [(penalty, .025)]*samples))
+    train_rewards = [i[0] for i in reward_list]
+    test_rewards = [i[1] for i in reward_list]
+  else:
+    for i in range(samples):
+      rewards, transfer_rewards= train_td3(penalty=penalty, epsilon=.025)
+      train_rewards.append(rewards)
+      test_rewards.append(transfer_rewards)
+
+  ave = lambda tr: sum(sum(tr))/(len(tr)*len(len(tr)))
 
   title = 'td3_'+env_name+('_penalty' if penalty else '')
+  print(title)
+  print(ave(train_rewards))
   plot_with_error_bars(steps, train_rewards, title)
 
   title = 'td3_transfer_'+env_name+('_penalty' if penalty else '')
   plot_with_error_bars(steps, test_rewards, title)
+  print(title)
+  print(ave(test_rewards))
 
 env_dict = {}
 env_dict['walker'] = ('Walker2d-v3', 'mod_envs/walker/', 17, 6)
@@ -186,7 +203,35 @@ env_dict['hopper'] = ('Hopper-v3', 'mod_envs/hopper/', 11, 3)
 env_dict['humanoid'] = ('Humanoid-v3', 'mod_envs/humoid/', 376, 17)
 
 
+MULTIPROCESSING = False
+
+#Avoid a bug in torch that throws an error if multiprocessing is used after any call to cuda
+if MULTIPROCESSING:
+  CUDA = False
+else:
+  CUDA = torch.cuda.is_available()
+  CUDA=False
+
+DEVICE=torch.device('cuda' if CUDA else 'cpu')
+
 for task in ['halfcheetah','walker']:
   env_name, path, state_dim, action_dim = env_dict[task]
   evaluate(penalty=True)
   evaluate(penalty=False)
+
+# p = mp.Pool(4)
+# for task in ['halfcheetah','walker']:
+#   env_name, path, state_dim, action_dim = env_dict[task]
+#   evaluate(penalty=True)
+#   evaluate(penalty=False)
+
+# processes = []
+# for task in ['halfcheetah','walker']:
+#   env_name, path, state_dim, action_dim = env_dict[task]
+#   p_pen = mp.Process(target=evaluate, args=(True,))
+#   p_no_pen = mp.Process(target=evaluate, args=(False,))
+#   p_pen.start()
+#   p_no_pen.start()
+#   processes += [p_pen, p_no_pen]
+# for process in processes:
+#   process.join()

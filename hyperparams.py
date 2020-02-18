@@ -28,5 +28,6 @@ TEST_INTERVAL = 5000
 
 
 import torch
-CUDA = torch.cuda.is_available()
+# CUDA = torch.cuda.is_available()
+CUDA = False
 DEVICE=torch.device('cuda' if CUDA else 'cpu')
