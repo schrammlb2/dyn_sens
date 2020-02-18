@@ -4,18 +4,15 @@ import torch
 from torch import optim
 from tqdm import tqdm
 from hyperparams import ACTION_NOISE, OFF_POLICY_BATCH_SIZE as BATCH_SIZE, DISCOUNT, HIDDEN_SIZE, LEARNING_RATE, MAX_STEPS, POLICY_DELAY, POLYAK_FACTOR, REPLAY_SIZE, TARGET_ACTION_NOISE, TARGET_ACTION_NOISE_CLIP, TEST_INTERVAL, UPDATE_INTERVAL, UPDATE_START
-from env import Env, Walker2dEnv_Mod
+# from hyperparams import DEVICE
+from hyperparams import *
+from env import Env#, Walker2dEnv_Mod
 # from models import Actor, Critic, create_target_network, update_target_network
 from generalized_models import Actor, Critic, create_target_network, update_target_network
 from utils import plot
 from gradient_penalty import gradient_penalty
 import optuna
-
-env_name = 'Walker2d-v2'
-path = 'mod_envs/walker/'
-# env_name = 'HalfCheetah-v2'
-state_dim = 17
-action_dim=6
+import pdb
 
 
 # MAX_STEPS = 15000
@@ -36,11 +33,12 @@ def test(actor):
 
 def test_transfer(actor, path):
   import os
-  for xml in os.listdir(path):
-    filename = os.getcwd() + '/'+ path + xml
+  filenames = [os.getcwd() + '/'+ path + xml for xml in os.listdir(path) if xml.endswith('.xml') ]
+  # for xml in os.listdir(path):
+  for filename in filenames:
     with torch.no_grad():
-      env = Env()
-      env.modify(filename)
+      env = Env(env_name, xml_file=filename)
+      # env.modify(filename)
       state, done, total_reward = env.reset(), False, 0
       for i in range(1000):
         action = torch.clamp(actor(state), min=-1, max=1)  # Use purely exploitative policy at test time
@@ -54,9 +52,9 @@ def test_transfer(actor, path):
 def train_td3(penalty = False, epsilon=.03, actor_LEARNING_RATE=LEARNING_RATE, critic_LEARNING_RATE=LEARNING_RATE):
   env = Env(env_name)
 
-  actor = Actor(HIDDEN_SIZE, stochastic=False, layer_norm=True, state_dim=state_dim, action_dim=action_dim)
-  critic_1 = Critic(HIDDEN_SIZE, state_action=True, layer_norm=True, state_dim=state_dim, action_dim=action_dim)
-  critic_2 = Critic(HIDDEN_SIZE, state_action=True, layer_norm=True, state_dim=state_dim, action_dim=action_dim)
+  actor = Actor(HIDDEN_SIZE, stochastic=False, layer_norm=True, state_dim=state_dim, action_dim=action_dim).to(DEVICE)
+  critic_1 = Critic(HIDDEN_SIZE, state_action=True, layer_norm=True, state_dim=state_dim, action_dim=action_dim).to(DEVICE)
+  critic_2 = Critic(HIDDEN_SIZE, state_action=True, layer_norm=True, state_dim=state_dim, action_dim=action_dim).to(DEVICE)
   target_actor = create_target_network(actor)
   target_critic_1 = create_target_network(critic_1)
   target_critic_2 = create_target_network(critic_2)
@@ -86,7 +84,7 @@ def train_td3(penalty = False, epsilon=.03, actor_LEARNING_RATE=LEARNING_RATE, c
       # Execute a in the environment and observe next state s', reward r, and done signal d to indicate whether s' is terminal
       next_state, reward, done = env.step(action)
       # Store (s, a, r, s', d) in replay buffer D
-      D.append({'state': state, 'action': action, 'reward': torch.tensor([reward]), 'next_state': next_state, 'done': torch.tensor([done], dtype=torch.float32)})
+      D.append({'state': state, 'action': action, 'reward': torch.tensor([reward], device=DEVICE), 'next_state': next_state, 'done': torch.tensor([done], dtype=torch.float32, device=DEVICE)})
       state = next_state
       # If s' is terminal, reset environment state
       if done:
@@ -99,7 +97,7 @@ def train_td3(penalty = False, epsilon=.03, actor_LEARNING_RATE=LEARNING_RATE, c
       batch = {k: torch.cat([d[k] for d in batch], dim=0) for k in batch[0].keys()}
 
       # Compute target actions with clipped noise (target policy smoothing)
-      target_action = torch.clamp(target_actor(batch['next_state']) + torch.clamp(TARGET_ACTION_NOISE * torch.randn(1, 1), min=-TARGET_ACTION_NOISE_CLIP, max=TARGET_ACTION_NOISE_CLIP), min=-1, max=1)
+      target_action = torch.clamp(target_actor(batch['next_state']) + torch.clamp(TARGET_ACTION_NOISE * torch.randn(1, 1, device=DEVICE), min=-TARGET_ACTION_NOISE_CLIP, max=TARGET_ACTION_NOISE_CLIP), min=-1, max=1)
       # Compute targets (clipped double Q-learning)
       if penalty: 
         tc1 = gradient_penalty(target_critic_1, batch['next_state'], target_action, epsilon=epsilon)
@@ -154,18 +152,22 @@ def hyperparameter_search():
   print(study.best_params)
 
 
-# def train_parallel(*args):
-#   return train_td3(*args)
+# import ray 
+# ray.init()
+# @ray.remote
+# def train_parallel():
+#   return train_td3(penalty=True, epsilon=.024)
 
-def evaluate():
+def evaluate(penalty=True):
   samples = 10
   train_rewards = []
   test_rewards = []
 
   steps = [i for i in range(UPDATE_START, MAX_STEPS ,UPDATE_INTERVAL)]
 
+  # [train_parallel.remote() for i in range(samples)]
   for i in range(samples):
-    rewards, transfer_rewards= train_td3(penalty=True, epsilon=.05)
+    rewards, transfer_rewards= train_td3(penalty=penalty, epsilon=.025)
     train_rewards.append(rewards)
     test_rewards.append(transfer_rewards)
 
@@ -175,6 +177,16 @@ def evaluate():
   title = 'td3_transfer_'+env_name+('_penalty' if penalty else '')
   plot_with_error_bars(steps, test_rewards, title)
 
+env_dict = {}
+env_dict['walker'] = ('Walker2d-v3', 'mod_envs/walker/', 17, 6)
+env_dict['halfcheetah'] = ('HalfCheetah-v3', 'mod_envs/halfcheetah/' , 17, 6)
+env_dict['ant'] = ('Ant-v3', 'mod_envs/ant/', 111, 8)
+env_dict['swimmer'] = ('Swimmer-v3', 'mod_envs/swimmer/', 8, 2)
+env_dict['hopper'] = ('Hopper-v3', 'mod_envs/hopper/', 11, 3)
+env_dict['humanoid'] = ('Humanoid-v3', 'mod_envs/humoid/', 376, 17)
 
 
-evaluate()
+for task in ['halfcheetah','walker']:
+  env_name, path, state_dim, action_dim = env_dict[task]
+  evaluate(penalty=True)
+  evaluate(penalty=False)
