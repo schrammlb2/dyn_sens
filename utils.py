@@ -55,10 +55,10 @@ def plot_with_error_bars(steps, rewards, title, label='Rewards', finished=True):
     plt.savefig(os.path.join('results', title + '.png'))
     plt.close()
 
-def multiplot(steps_list, rewards_list, label_list):
+def multiplot(steps_list, rewards_list, label_list, title):
   finished = False
   for i in range(len(rewards_list)):
     if i == len(rewards_list)-1:
       finished = True
-    plot_with_error_bars(steps_list[i], rewards_list[i], label_list[i], finished=finished)
+    plot_with_error_bars(steps_list[i], rewards_list[i], title, label_list[i], finished=finished)
 
