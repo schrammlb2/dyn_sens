@@ -28,6 +28,13 @@ TEST_INTERVAL = 1000
 
 
 import torch
-# CUDA = torch.cuda.is_available()
-CUDA = False
+
+MULTIPROCESSING = False
+
+#Avoid a bug in torch that throws an error if multiprocessing is used after any call to cuda
+if MULTIPROCESSING:
+  CUDA = False
+else:
+  CUDA = torch.cuda.is_available()
+
 DEVICE=torch.device('cuda' if CUDA else 'cpu')

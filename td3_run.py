@@ -211,16 +211,6 @@ env_dict['hopper'] = ('Hopper-v3', 'mod_envs/hopper/', 11, 3)
 env_dict['humanoid'] = ('Humanoid-v3', 'mod_envs/humoid/', 376, 17)
 
 
-MULTIPROCESSING = False
-
-#Avoid a bug in torch that throws an error if multiprocessing is used after any call to cuda
-if MULTIPROCESSING:
-  CUDA = False
-else:
-  CUDA = torch.cuda.is_available()
-  CUDA=False
-
-DEVICE=torch.device('cuda' if CUDA else 'cpu')
 
 for task in ['halfcheetah','walker']:
   env_name, path, state_dim, action_dim = env_dict[task]
