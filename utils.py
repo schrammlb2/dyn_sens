@@ -33,11 +33,11 @@ def plot_with_error_bars(steps, rewards, title, label='Rewards', finished=True):
   steps = np.array(steps)
   conf_ints = 2*stds*samples**(-1/2)
 
-  plt.plot(steps, means, 'b-')
+  plt.plot(steps, means, label)
   plt.fill_between(np.array(steps), means+conf_ints, means-conf_ints, alpha=.7)
   plt.title(title)
   plt.xlabel('Steps')
-  plt.ylabel(label)
+  plt.ylabel('Rewards')
   min_steps = steps.min()
   max_steps = steps.max()
   plt.xlim((min_steps, max_steps))

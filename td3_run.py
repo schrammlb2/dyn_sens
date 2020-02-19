@@ -195,7 +195,7 @@ def compare():
 
   train_rewards = [p_train, no_p_train]
   test_rewards = [p_test, no_p_test]
-  labels = ['penalty', 'no_penalty']
+  labels = ['Our method', 'Baseline']
   # pdb.set_trace()
   multiplot(steps_list, train_rewards, labels, 'td3_'+env_name+'_train')
   multiplot(steps_list, test_rewards, labels, 'td3_'+env_name+'_test')
