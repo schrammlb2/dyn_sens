@@ -160,7 +160,7 @@ def hyperparameter_search():
 
 
 def evaluate(penalty=True):
-  samples = 2
+  samples = SAMPLES
   train_rewards = []
   test_rewards = []
 
@@ -201,6 +201,7 @@ def compare():
   multiplot(steps_list, test_rewards, labels, 'td3_'+env_name+'_train')
 
 
+SAMPLES = 10
 
 env_dict = {}
 env_dict['walker'] = ('Walker2d-v3', 'mod_envs/walker/', 17, 6)
