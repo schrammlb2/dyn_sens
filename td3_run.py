@@ -220,6 +220,13 @@ env_dict['swimmer'] = ('Swimmer-v3', 'mod_envs/swimmer/', 8, 2)
 env_dict['hopper'] = ('Hopper-v3', 'mod_envs/hopper/', 11, 3)
 env_dict['humanoid'] = ('Humanoid-v3', 'mod_envs/humoid/', 376, 17)
 
+from randomize_xml import randomize_xml
+for desc in env_dict.values():
+  path = desc[1]
+  filenames = [os.getcwd() + '/'+ path + xml for xml in os.listdir(path) if xml.endswith('.xml') ]
+  fn = sorted(filenames, key = lambda x: len(x))
+  xml_file = fn[0]
+  randomize_xml(xml_file, scale=.3, count=4)
 
 
 for task in ['halfcheetah','walker']:
