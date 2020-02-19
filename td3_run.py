@@ -197,8 +197,8 @@ def compare():
   test_rewards = [p_test, no_p_test]
   labels = ['Our method', 'Baseline']
   # pdb.set_trace()
-  multiplot(steps_list, train_rewards, labels, 'td3_'+env_name+'_train')
-  multiplot(steps_list, test_rewards, labels, 'td3_'+env_name+'_test')
+  multiplot(steps_list, train_rewards, labels, 'td3 '+env_name+' same environment')
+  multiplot(steps_list, test_rewards, labels, 'td3 '+env_name+' modified environment')
 
 
 SAMPLES = 10
