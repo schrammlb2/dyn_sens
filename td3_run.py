@@ -218,7 +218,7 @@ env_dict['halfcheetah'] = ('HalfCheetah-v3', 'mod_envs/halfcheetah/' , 17, 6)
 env_dict['ant'] = ('Ant-v3', 'mod_envs/ant/', 111, 8)
 env_dict['swimmer'] = ('Swimmer-v3', 'mod_envs/swimmer/', 8, 2)
 env_dict['hopper'] = ('Hopper-v3', 'mod_envs/hopper/', 11, 3)
-env_dict['humanoid'] = ('Humanoid-v3', 'mod_envs/humoid/', 376, 17)
+env_dict['humanoid'] = ('Humanoid-v3', 'mod_envs/humanoid/', 376, 17)
 
 from randomize_xml import randomize_xml
 for desc in env_dict.values():
