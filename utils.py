@@ -27,25 +27,14 @@ def plot(step, reward, title):
 
 def plot_with_error_bars(steps, rewards, title, label='Rewards', finished=True):
   samples = len(rewards)
-  means = []
-  stds = []
-  train_std = []
-  # pdb.set_trace()
   rewards = np.array(rewards)
   means = np.mean(rewards, axis=0)
-  std = np.std(rewards, axis=0)
+  stds = np.std(rewards, axis=0)
   steps = np.array(steps)
-  # timestep_rewards = [rewards[i][j] for i in range()]
-  # for i in range(samples):
-  #   means.append(mean(rewards[i]))
-  #   stds.append(std(rewards[i])*samples**(-.5)) # confidence intervals
+  conf_ints = 2*stds*samples**(-1/2)
 
-  # means = np.array(means)
-  # stds = np.array(stds)
-
-  # pdb.set_trace()
   plt.plot(steps, means, 'b-')
-  plt.fill_between(np.array(steps), means+stds, means-stds, alpha=.7)
+  plt.fill_between(np.array(steps), means+conf_ints, means-conf_ints, alpha=.7)
   plt.title(title)
   plt.xlabel('Steps')
   plt.ylabel(label)

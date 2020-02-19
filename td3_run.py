@@ -16,7 +16,7 @@ import pdb
 import torch.multiprocessing as mp
 
 
-# MAX_STEPS = 15000
+MAX_STEPS = 15000
 # try: 
 #   mp.set_start_method("spawn")
 # except:
@@ -158,14 +158,9 @@ def hyperparameter_search():
   print(study.best_params)
 
 
-# import ray 
-# ray.init()
-# @ray.remote
-# def train_parallel():
-#   return train_td3(penalty=True, epsilon=.024)
 
 def evaluate(penalty=True):
-  samples = 10
+  samples = 2
   train_rewards = []
   test_rewards = []
 
@@ -201,6 +196,7 @@ def compare():
   train_rewards = [p_train, no_p_train]
   test_rewards = [p_test, no_p_test]
   labels = ['penalty', 'no_penalty']
+  # pdb.set_trace()
   multiplot(steps_list, train_rewards, labels, 'td3_'+env_name+'_train')
   multiplot(steps_list, test_rewards, labels, 'td3_'+env_name+'_train')
 
