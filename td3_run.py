@@ -16,7 +16,7 @@ import pdb
 import torch.multiprocessing as mp
 
 
-MAX_STEPS = 15000
+# MAX_STEPS = 15000
 # try: 
 #   mp.set_start_method("spawn")
 # except:
@@ -198,7 +198,7 @@ def compare():
   labels = ['penalty', 'no_penalty']
   # pdb.set_trace()
   multiplot(steps_list, train_rewards, labels, 'td3_'+env_name+'_train')
-  multiplot(steps_list, test_rewards, labels, 'td3_'+env_name+'_train')
+  multiplot(steps_list, test_rewards, labels, 'td3_'+env_name+'_test')
 
 
 SAMPLES = 10
