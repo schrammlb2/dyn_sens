@@ -46,5 +46,6 @@ def randomize_xml(base_xml_file, scale=.1 ,count = 1):
 		with open(base_xml_file[:-4] + '_rand_mod_' + str(i) + '.xml', 'w+') as fd:
 			fd.write(new_xml)
 
-randomize_xml('./mod_envs/halfcheetah/halfcheetah.xml', count = 4)
-# randomize_xml('./mod_envs/walker/walker2d.xml', count = 4)
+scale = .3
+randomize_xml('./mod_envs/halfcheetah/halfcheetah.xml', count = 4, scale=scale)
+randomize_xml('./mod_envs/walker/walker2d.xml', count = 4, scale=scale)
