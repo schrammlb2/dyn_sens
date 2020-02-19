@@ -226,6 +226,7 @@ for desc in env_dict.values():
   filenames = [os.getcwd() + '/'+ path + xml for xml in os.listdir(path) if xml.endswith('.xml') ]
   fn = sorted(filenames, key = lambda x: len(x))
   xml_file = fn[0]
+  print(fn[0])
   randomize_xml(xml_file, scale=.3, count=4)
 
 
