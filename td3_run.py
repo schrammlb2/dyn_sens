@@ -182,7 +182,7 @@ def evaluate(penalty=True):
   title = 'td3_'+env_name+('_penalty' if penalty else '')
 
   if MULTIPROCESSING:
-    p = mp.Pool(4)
+    p = mp.Pool(20)
     reward_list = print(p.map(train_td3, [(penalty, .025)]*samples))
     train_rewards = [i[0] for i in reward_list]
     test_rewards = [i[1] for i in reward_list]
@@ -190,8 +190,8 @@ def evaluate(penalty=True):
       pickle.dump((train_rewards, test_rewards), f)
   else:
     for i in range(samples):
-      # rewards, transfer_rewards= train_td3(penalty=penalty)#, epsilon=.05)
-      rewards = transfer_rewards = [random.random() for i in range(UPDATE_START, MAX_STEPS,TEST_INTERVAL)]
+      rewards, transfer_rewards= train_td3(penalty=penalty)#, epsilon=.05)
+      # rewards = transfer_rewards = [random.random() for i in range(UPDATE_START, MAX_STEPS,TEST_INTERVAL)]
       try:
         with open('data/' + title + '.pkl', 'rb+') as f:
           train_rewards, test_rewards = pickle.load(f)

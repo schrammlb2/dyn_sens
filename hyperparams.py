@@ -30,6 +30,7 @@ TEST_INTERVAL = 2000
 import torch
 
 MULTIPROCESSING = False
+# MULTIPROCESSING = True
 
 #Avoid a bug in torch that throws an error if multiprocessing is used after any call to cuda
 if MULTIPROCESSING:
