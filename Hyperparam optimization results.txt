@@ -1,0 +1,2 @@
+Pendulum settings: 
+{'epsilon': 0.01595139668869838, 'actor_scaling': 0.6251663915947183, 'critic_lr': 0.0023513317348431567, 'log_hidden_size': 6}
