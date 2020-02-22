@@ -183,7 +183,7 @@ def evaluate(penalty=True):
 
   if MULTIPROCESSING:
     p = mp.Pool(20)
-    reward_list = print(p.map(train_td3, [(penalty, .025)]*samples))
+    reward_list = p.map(train_td3, [(penalty, .025)]*samples)
     train_rewards = [i[0] for i in reward_list]
     test_rewards = [i[1] for i in reward_list]
     with open('data/' + title + '.pkl', 'wb+') as f:
@@ -263,13 +263,13 @@ def load_and_plot():
 SAMPLES = 40
 
 env_dict = {}
-env_dict['pendulum'] = ('Pendulum-v0', None, 3, 1)
-env_dict['swimmer'] = ('Swimmer-v3', 'mod_envs/swimmer/', 8, 2)
+#env_dict['pendulum'] = ('Pendulum-v0', None, 3, 1)
+#env_dict['swimmer'] = ('Swimmer-v3', 'mod_envs/swimmer/', 8, 2)
 env_dict['hopper'] = ('Hopper-v3', 'mod_envs/hopper/', 11, 3)
 env_dict['halfcheetah'] = ('HalfCheetah-v3', 'mod_envs/halfcheetah/' , 17, 6)
 env_dict['ant'] = ('Ant-v3', 'mod_envs/ant/', 111, 8)
 env_dict['walker'] = ('Walker2d-v3', 'mod_envs/walker/', 17, 6)
-env_dict['humanoid'] = ('Humanoid-v3', 'mod_envs/humanoid/', 376, 17)
+#env_dict['humanoid'] = ('Humanoid-v3', 'mod_envs/humanoid/', 376, 17)
 
 from randomize_xml import randomize_xml
 for desc in env_dict.values():
