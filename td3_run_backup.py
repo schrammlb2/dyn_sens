@@ -16,16 +16,8 @@ import pdb
 import torch.multiprocessing as mp
 import os
 import pickle
-import argparse
 import gym
 import pybulletgym
-
-parser = argparse.ArgumentParser()
-parser.add_argument('--task', type=str, default='')
-# parser.add_argument('--penalty', type=bool, default=True)
-parser.add_argument('--no_penalty', default=True, action='store_false', help='Bool type')
-args = parser.parse_args()
-
 # MAX_STEPS = 15000
 # try: 
 #   mp.set_start_method("spawn")
@@ -45,36 +37,28 @@ def test(actor):
     return total_reward
 
 def test_transfer(actor, path):
-  if path is not None:
-    filenames = [os.getcwd() + '/'+ path + xml for xml in os.listdir(path) if xml.endswith('.xml') ]
-    # for xml in os.listdir(path):
-    fn = sorted(filenames, key = lambda x: len(x))[1:]
-    # for filename in filenames:
-    reward_list = []
-    for filename in fn:
-      with torch.no_grad():
-        env = Env(env_name, xml_file=filename)
-        # env.modify(filename)
-        state, done, total_reward = env.reset(), False, 0
-        for i in range(1000):
-          action = torch.clamp(actor(state), min=-1, max=1)  # Use purely exploitative policy at test time
-          state, reward, done = env.step(action)
-          total_reward += reward
-          if done: 
-            break
-        reward_list.append(total_reward)
+  filenames = [os.getcwd() + '/'+ path + xml for xml in os.listdir(path) if xml.endswith('.xml') ]
+  # for xml in os.listdir(path):
+  for filename in filenames:
+    with torch.no_grad():
+      env = Env(env_name, xml_file=filename)
+      # env.modify(filename)
+      state, done, total_reward = env.reset(), False, 0
+      for i in range(1000):
+        action = torch.clamp(actor(state), min=-1, max=1)  # Use purely exploitative policy at test time
+        state, reward, done = env.step(action)
+        total_reward += reward
+        if done: 
+          break
+  return total_reward/len(filenames)
+  
 
-    return mean(reward_list)
-  else:
-    return 0
-
-
-def train_td3(penalty = False, epsilon=.02, actor_LEARNING_RATE=LEARNING_RATE*.62, critic_LEARNING_RATE=LEARNING_RATE, h = HIDDEN_SIZE):
+def train_td3(penalty = False, epsilon=.03, actor_LEARNING_RATE=LEARNING_RATE, critic_LEARNING_RATE=LEARNING_RATE):
   env = Env(env_name)
 
-  actor = Actor(h, stochastic=False, layer_norm=True, state_dim=state_dim, action_dim=action_dim).to(DEVICE)
-  critic_1 = Critic(h,  state_action=True, layer_norm=True, state_dim=state_dim, action_dim=action_dim).to(DEVICE)
-  critic_2 = Critic(h,  state_action=True, layer_norm=True, state_dim=state_dim, action_dim=action_dim).to(DEVICE)
+  actor = Actor(HIDDEN_SIZE, stochastic=False, layer_norm=True, state_dim=state_dim, action_dim=action_dim).to(DEVICE)
+  critic_1 = Critic(HIDDEN_SIZE, state_action=True, layer_norm=True, state_dim=state_dim, action_dim=action_dim).to(DEVICE)
+  critic_2 = Critic(HIDDEN_SIZE, state_action=True, layer_norm=True, state_dim=state_dim, action_dim=action_dim).to(DEVICE)
   target_actor = create_target_network(actor)
   target_critic_1 = create_target_network(critic_1)
   target_critic_2 = create_target_network(critic_2)
@@ -96,6 +80,7 @@ def train_td3(penalty = False, epsilon=.02, actor_LEARNING_RATE=LEARNING_RATE*.6
     with torch.no_grad():
       if step < UPDATE_START:
         # To improve exploration take actions sampled from a uniform random distribution over actions at the start of training
+        # action = torch.tensor([[2 * random.random() - 1]])
         action = env.sample_action()
       else:
         # pdb.set_trace()
@@ -162,17 +147,15 @@ def train_td3(penalty = False, epsilon=.02, actor_LEARNING_RATE=LEARNING_RATE*.6
 
 
 def objective(trial):
-  epsilon = trial.suggest_loguniform('epsilon', .01, .1)
-  actor_scaling = trial.suggest_loguniform('actor_scaling', .5, 2.)
-  critic_lr = trial.suggest_loguniform('critic_lr', LEARNING_RATE*.01, LEARNING_RATE*3)
-  log_hidden_size = trial.suggest_int('log_hidden_size',5, 9)
+  epsilon = trial.suggest_loguniform('epsilon', .005, .05)
+  actor_LEARNING_RATE = trial.suggest_loguniform('epsilon', LEARNING_RATE*.3, LEARNING_RATE*3)
+  critic_LEARNING_RATE = LEARNING_RATE#trial.suggest_loguniform('epsilon', LEARNING_RATE*.3, LEARNING_RATE*3)
 
-  return -sum(train_td3(penalty=True, epsilon=epsilon, actor_LEARNING_RATE=critic_lr*actor_scaling, critic_LEARNING_RATE=critic_lr, h=2**log_hidden_size)[0])
+  return -sum(train_td3(penalty=True, epsilon=epsilon)[0])#, actor_LEARNING_RATE=actor_LEARNING_RATE, critic_LEARNING_RATE=critic_LEARNING_RATE)
 
 def hyperparameter_search():
   study = optuna.create_study()
   study.optimize(objective, n_trials=100)
-  print(study.trials)
   print(study.best_params)
 
 
@@ -184,27 +167,17 @@ def evaluate(penalty=True):
   title = 'td3_'+env_name+('_penalty' if penalty else '')
 
   if MULTIPROCESSING:
-    p = mp.Pool(20)
-    reward_list = p.map(train_td3, [(penalty, .025)]*samples)
+    p = mp.Pool(4)
+    reward_list = print(p.map(train_td3, [(penalty, .025)]*samples))
     train_rewards = [i[0] for i in reward_list]
     test_rewards = [i[1] for i in reward_list]
-    with open('data/' + title + '.pkl', 'wb+') as f:
-      pickle.dump((train_rewards, test_rewards), f)
   else:
     for i in range(samples):
-      rewards, transfer_rewards= train_td3(penalty=penalty)#, epsilon=.05)
-      # rewards = transfer_rewards = [random.random() for i in range(UPDATE_START, MAX_STEPS,TEST_INTERVAL)]
-      try:
-        with open('data/' + title + '.pkl', 'rb+') as f:
-          train_rewards, test_rewards = pickle.load(f)
-      except:
-        print('Unable to find data file. Making new one')
-
+      rewards, transfer_rewards= train_td3(penalty=penalty, epsilon=.025)
       train_rewards.append(rewards)
       test_rewards.append(transfer_rewards)
-      with open('data/' + title + '.pkl', 'wb+') as f:
+      with open(title + '.pickle', '') as f:
         pickle.dump((train_rewards, test_rewards), f)
-
 
   #recursive averaging
   ave = lambda tr: np.mean(np.array(tr))
@@ -236,35 +209,9 @@ def compare():
   multiplot(steps_list, train_rewards, labels, 'td3 '+env_name+' same environment')
   multiplot(steps_list, test_rewards, labels, 'td3 '+env_name+' modified environment')
 
-def load_and_plot():
-  steps = [i for i in range(UPDATE_START, MAX_STEPS,TEST_INTERVAL)]
-  steps_list = [steps]*2  
-  penalty = True
-  title = 'td3_'+env_name+('_penalty' if penalty else '')
-  with open('data/' + title + '.pkl', 'rb+') as f:
-    p_train, p_test = pickle.load(f)
 
+SAMPLES = 10
 
-  penalty = False
-  title = 'td3_'+env_name+('_penalty' if penalty else '')
-  with open('data/' + title + '.pkl', 'rb+') as f:
-    no_p_train, no_p_test = pickle.load(f)
-
-    
-
-  train_rewards = [p_train, no_p_train]
-  test_rewards = [p_test, no_p_test]
-  train_rewards = np.array([p_train, no_p_train])
-  test_rewards = np.array([p_test, no_p_test])
-  labels = ['Our method', 'Baseline']
-
-  multiplot(steps_list, train_rewards, labels, 'td3 '+env_name+' same environment')
-  multiplot(steps_list, test_rewards, labels, 'td3 '+env_name+' modified environment')
-
-
-SAMPLES = 40
-
-env_dict = {}
 env_dict = {}
 # env_dict['walker'] = ('Walker2d-v3', 'mod_envs/walker/', 17, 6)
 # env_dict['halfcheetah'] = ('HalfCheetah-v3', 'mod_envs/halfcheetah/' , 17, 6)
@@ -310,19 +257,11 @@ for desc in env_dict.values():
   env_name= desc[0]
   test_xml_loading(env_name, path)
 
-if args.task =='':
-  # OPTIMZE = True
-  OPTIMZE = False
-  for task in env_dict.keys():
-  # for task in reversed(list(env_dict.keys())):
-    env_name, path, state_dim, action_dim = env_dict[task]
-    if OPTIMZE:
-      path=None
-      hyperparameter_search()
-    else:
-      compare()
-else:
-  env_name, path, state_dim, action_dim = env_dict[args.task]
-  print(env_dict[args.task])
-  evaluate(args.no_penalty)
-  # load_and_plot()
+
+
+  
+
+
+for task in ['halfcheetah','walker']:
+  env_name, path, state_dim, action_dim = env_dict[task]
+  compare()

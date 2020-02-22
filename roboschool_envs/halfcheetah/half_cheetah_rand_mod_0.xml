@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mujoco model="cheetah">
+	<compiler angle="radian" coordinate="local" inertiafromgeom="true" settotalmass="14"></compiler>
+	<default>
+		<joint armature=".1" damping="0.00862640061894805" limited="true" solimplimit="0 .8 .03" solreflimit=".02 1" stiffness="9.052079710883305"></joint>
+		<geom conaffinity="0" condim="3" contype="1" friction="0.750449138694723 0.08888833884033162 0.11192343429336193" rgba="0.8 0.6 .4 1" solimp="0.0 0.8 0.01" solref="0.02 1"></geom>
+		<motor ctrllimited="true" ctrlrange="-1 1"></motor>
+	</default>
+	<size nstack="300000" nuser_geom="1"></size>
+	<option gravity="0 0 -9.81" timestep="0.01"></option>
+	<worldbody>
+		<body name="torso" pos="0 0 .7">
+			<joint armature="0" axis="1 0 0" damping="0.0" limited="false" name="ignorex" pos="0 0 0" stiffness="0.0" type="slide"></joint>
+			<joint armature="0" axis="0 0 1" damping="0.0" limited="false" name="ignorez" pos="0 0 0" stiffness="0.0" type="slide"></joint>
+			<joint armature="0" axis="0 1 0" damping="0.0" limited="false" name="ignorey" pos="0 0 0" stiffness="0.0" type="hinge"></joint>
+			<geom fromto="-.5 0 0 .5 0 0" name="torso" size="0.039853245512520355" type="capsule"></geom>
+			<geom axisangle="0 1 0 .87" name="head" pos=".6 0 .1" size="0.05677358653426797 0.1423291256333585" type="capsule"></geom>
+			<body name="bthigh" pos="-.5 0 0">
+				<joint axis="0 1 0" damping="7.57899885579825" name="bthigh" pos="0 0 0" range="-.52 1.05" stiffness="286.52791824102445" type="hinge"></joint>
+				<geom axisangle="0 1 0 -3.8" name="bthigh" pos=".1 0 -.13" size="0.05024746569675727 0.18404463370090776" type="capsule"></geom>
+				<body name="bshin" pos=".16 0 -.25">
+					<joint axis="0 1 0" damping="5.0014359401940975" name="bshin" pos="0 0 0" range="-.785 .785" stiffness="150.54682812199562" type="hinge"></joint>
+					<geom axisangle="0 1 0 -2.03" name="bshin" pos="-.14 0 -.07" rgba="0.9 0.6 0.6 1" size="0.05859959230969302 0.16254362063815347" type="capsule"></geom>
+					<body name="bfoot" pos="-.28 0 -.14">
+						<joint axis="0 1 0" damping="2.8595678685364154" name="bfoot" pos="0 0 0" range="-.4 .785" stiffness="113.96784394045588" type="hinge"></joint>
+						<geom axisangle="0 1 0 -.27" name="bfoot" pos=".03 0 -.097" rgba="0.9 0.6 0.6 1" size="0.05801910933022502 0.08513429948249344" type="capsule"></geom>
+						<inertial mass="10"></inertial>
+					</body>
+				</body>
+			</body>
+			<body name="fthigh" pos=".5 0 0">
+				<joint axis="0 1 0" damping="3.5869369555696613" name="fthigh" pos="0 0 0" range="-1.5 0.8" stiffness="224.6769578151381" type="hinge"></joint>
+				<geom axisangle="0 1 0 .52" name="fthigh" pos="-.07 0 -.12" size="0.049154090195480234 0.17119441960776" type="capsule"></geom>
+				<body name="fshin" pos="-.14 0 -.24">
+					<joint axis="0 1 0" damping="2.4253819958715845" name="fshin" pos="0 0 0" range="-1.2 1.1" stiffness="105.97375038170765" type="hinge"></joint>
+					<geom axisangle="0 1 0 -.6" name="fshin" pos=".065 0 -.09" rgba="0.9 0.6 0.6 1" size="0.045238113926023386 0.08263804930828533" type="capsule"></geom>
+					<body name="ffoot" pos=".13 0 -.18">
+						<joint axis="0 1 0" damping="1.5027507961600115" name="ffoot" pos="0 0 0" range="-3.1 -0.3" stiffness="70.79618509144419" type="hinge"></joint>
+						<geom axisangle="0 1 0 -.6" name="ffoot" pos=".045 0 -.07" rgba="0.9 0.6 0.6 1" size="0.03575434082484845 0.06503275179028484" type="capsule"></geom>
+						<inertial mass="10"></inertial>
+					</body>
+				</body>
+			</body>
+		</body>
+	</worldbody>
+	<actuator>
+		<motor gear="120" joint="bthigh" name="bthigh"></motor>
+		<motor gear="90" joint="bshin" name="bshin"></motor>
+		<motor gear="60" joint="bfoot" name="bfoot"></motor>
+		<motor gear="120" joint="fthigh" name="fthigh"></motor>
+		<motor gear="60" joint="fshin" name="fshin"></motor>
+		<motor gear="30" joint="ffoot" name="ffoot"></motor>
+	</actuator>
+</mujoco>

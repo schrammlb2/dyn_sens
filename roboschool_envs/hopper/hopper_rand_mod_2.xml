@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mujoco model="hopper">
+	<compiler angle="degree" coordinate="global" inertiafromgeom="true"></compiler>
+	<default>
+		<joint armature="1" damping="1.118267367529177" limited="true"></joint>
+		<geom conaffinity="1" condim="1" contype="1" margin="0.001" friction="0.7991484564991993 0.0916791457359305 0.10089160323068568" material="geom" rgba="0.8 0.6 .4 1" solimp=".8 .8 .01" solref=".02 1"></geom>
+		<motor ctrllimited="true" ctrlrange="-.4 .4"></motor>
+	</default>
+	<option integrator="RK4" timestep="0.002"></option>
+	<worldbody>
+		<body name="torso">
+			<joint armature="0" axis="1 0 0" damping="0.0" limited="false" name="ignore1" pos="0 0 0" stiffness="0.0" type="slide"></joint>
+			<joint armature="0" axis="0 0 1" damping="0.0" limited="false" name="ignore2" pos="0 0 0" ref="1.25" stiffness="0.0" type="slide"></joint>
+			<joint armature="0" axis="0 1 0" damping="0.0" limited="false" name="ignore3" pos="0 0 0" stiffness="0.0" type="hinge"></joint>
+			<geom fromto="0 0 1.45 0 0 1.05" name="torso_geom" size="0.035299201806299266" type="capsule"></geom>
+			<body name="thigh">
+				<joint axis="0 -1 0" name="thigh_joint" pos="0 0 1.05" range="-150 0" type="hinge"></joint>
+				<geom fromto="0 0 1.05 0 0 0.6" name="thigh_geom" size="0.05448615797964762" type="capsule"></geom>
+				<body name="leg">
+					<joint axis="0 -1 0" name="leg_joint" pos="0 0 0.6" range="-150 0" type="hinge"></joint>
+					<geom fromto="0 0 0.6 0 0 0.1" name="leg_geom" size="0.03403868393816158" type="capsule"></geom>
+					<body name="foot">
+						<joint axis="0 -1 0" name="foot_joint" pos="0 0 0.1" range="-45 45" type="hinge"></joint>
+						<geom fromto="-0.13 0 0.1 0.26 0 0.1" name="foot_geom" size="0.05787508983774595" type="capsule"></geom>
+					</body>
+				</body>
+			</body>
+		</body>
+	</worldbody>
+	<actuator>
+		<motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="200.0" joint="thigh_joint"></motor>
+		<motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="200.0" joint="leg_joint"></motor>
+		<motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="200.0" joint="foot_joint"></motor>
+	</actuator>
+</mujoco>
