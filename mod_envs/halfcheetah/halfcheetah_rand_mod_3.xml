@@ -2,8 +2,8 @@
 <mujoco model="cheetah">
 	<compiler angle="radian" coordinate="local" inertiafromgeom="true" settotalmass="14"></compiler>
 	<default>
-		<joint armature=".1" damping="0.009671895429426827" limited="true" solimplimit="0 .8 .03" solreflimit=".02 1" stiffness="8.152520521002725"></joint>
-		<geom conaffinity="0" condim="3" contype="1" friction="0.3969670593415349 0.10377449566664727 0.09957878241531251" rgba="0.8 0.6 .4 1" solimp="0.0 0.8 0.01" solref="0.02 1"></geom>
+		<joint armature=".1" damping="0.009718771508162036" limited="true" solimplimit="0 .8 .03" solreflimit=".02 1" stiffness="8.341294141300457"></joint>
+		<geom conaffinity="0" condim="3" contype="1" friction="0.3997486325172377 0.09562506080374877 0.09675678927388487" rgba="0.8 0.6 .4 1" solimp="0.0 0.8 0.01" solref="0.02 1"></geom>
 		<motor ctrllimited="true" ctrlrange="-1 1"></motor>
 	</default>
 	<size nstack="300000" nuser_geom="1"></size>
@@ -17,35 +17,35 @@
 	</asset>
 	<worldbody>
 		<light cutoff="100" diffuse="1 1 1" dir="-0 0 -1.3" directional="true" exponent="1" pos="0 0 1.3" specular=".1 .1 .1"></light>
-		<geom conaffinity="1" condim="3" material="MatPlane" name="floor" pos="0 0 0" rgba="0.8 0.9 0.8 1" size="41.7782881951013 40.44488568661222 39.81661619969084" type="plane"></geom>
+		<geom conaffinity="1" condim="3" material="MatPlane" name="floor" pos="0 0 0" rgba="0.8 0.9 0.8 1" size="40.452791775494376 38.32450220170011 41.37379151341583" type="plane"></geom>
 		<body name="torso" pos="0 0 .7">
 			<camera name="track" mode="trackcom" pos="0 -3 0.3" xyaxes="1 0 0 0 0 1"></camera>
 			<joint armature="0" axis="1 0 0" damping="0.0" limited="false" name="rootx" pos="0 0 0" stiffness="0.0" type="slide"></joint>
 			<joint armature="0" axis="0 0 1" damping="0.0" limited="false" name="rootz" pos="0 0 0" stiffness="0.0" type="slide"></joint>
 			<joint armature="0" axis="0 1 0" damping="0.0" limited="false" name="rooty" pos="0 0 0" stiffness="0.0" type="hinge"></joint>
-			<geom fromto="-.5 0 0 .5 0 0" name="torso" size="0.04718093361107265" type="capsule"></geom>
-			<geom axisangle="0 1 0 .87" name="head" pos=".6 0 .1" size="0.047611468288399815 0.14412980264270445" type="capsule"></geom>
+			<geom fromto="-.5 0 0 .5 0 0" name="torso" size="0.04701398657785643" type="capsule"></geom>
+			<geom axisangle="0 1 0 .87" name="head" pos=".6 0 .1" size="0.047494243613205464 0.1480588826955228" type="capsule"></geom>
 			<body name="bthigh" pos="-.5 0 0">
-				<joint axis="0 1 0" damping="5.828805586360842" name="bthigh" pos="0 0 0" range="-.52 1.05" stiffness="246.27123293030755" type="hinge"></joint>
-				<geom axisangle="0 1 0 -3.8" name="bthigh" pos=".1 0 -.13" size="0.04490426035590758 0.14317804286626828" type="capsule"></geom>
+				<joint axis="0 1 0" damping="6.039691915516041" name="bthigh" pos="0 0 0" range="-.52 1.05" stiffness="233.81963310882406" type="hinge"></joint>
+				<geom axisangle="0 1 0 -3.8" name="bthigh" pos=".1 0 -.13" size="0.04547465600356123 0.1391930743863796" type="capsule"></geom>
 				<body name="bshin" pos=".16 0 -.25">
-					<joint axis="0 1 0" damping="4.673859335725106" name="bshin" pos="0 0 0" range="-.785 .785" stiffness="175.05562745510193" type="hinge"></joint>
-					<geom axisangle="0 1 0 -2.03" name="bshin" pos="-.14 0 -.07" rgba="0.9 0.6 0.6 1" size="0.04560726807086249 0.1497315618134471" type="capsule"></geom>
+					<joint axis="0 1 0" damping="4.432236252121181" name="bshin" pos="0 0 0" range="-.785 .785" stiffness="187.37893337975973" type="hinge"></joint>
+					<geom axisangle="0 1 0 -2.03" name="bshin" pos="-.14 0 -.07" rgba="0.9 0.6 0.6 1" size="0.04541034249645737 0.15368396933100373" type="capsule"></geom>
 					<body name="bfoot" pos="-.28 0 -.14">
-						<joint axis="0 1 0" damping="3.037165495185986" name="bfoot" pos="0 0 0" range="-.4 .785" stiffness="121.26994975675433" type="hinge"></joint>
-						<geom axisangle="0 1 0 -.27" name="bfoot" pos=".03 0 -.097" rgba="0.9 0.6 0.6 1" size="0.04713395614086369 0.09504573618385422" type="capsule"></geom>
+						<joint axis="0 1 0" damping="3.0498265329115615" name="bfoot" pos="0 0 0" range="-.4 .785" stiffness="120.597543049244" type="hinge"></joint>
+						<geom axisangle="0 1 0 -.27" name="bfoot" pos=".03 0 -.097" rgba="0.9 0.6 0.6 1" size="0.047998387402364215 0.09353735227344379" type="capsule"></geom>
 					</body>
 				</body>
 			</body>
 			<body name="fthigh" pos=".5 0 0">
-				<joint axis="0 1 0" damping="4.621310520898795" name="fthigh" pos="0 0 0" range="-1 .7" stiffness="178.7064200597062" type="hinge"></joint>
-				<geom axisangle="0 1 0 .52" name="fthigh" pos="-.07 0 -.12" size="0.04711506174521108 0.13185807616289097" type="capsule"></geom>
+				<joint axis="0 1 0" damping="4.367299508855639" name="fthigh" pos="0 0 0" range="-1 .7" stiffness="174.06204117874444" type="hinge"></joint>
+				<geom axisangle="0 1 0 .52" name="fthigh" pos="-.07 0 -.12" size="0.045623946091908466 0.13559036186687964" type="capsule"></geom>
 				<body name="fshin" pos="-.14 0 -.24">
-					<joint axis="0 1 0" damping="2.978212183125809" name="fshin" pos="0 0 0" range="-1.2 .87" stiffness="122.42758196449606" type="hinge"></joint>
-					<geom axisangle="0 1 0 -.6" name="fshin" pos=".065 0 -.09" rgba="0.9 0.6 0.6 1" size="0.04697704425372109 0.10774793777831429" type="capsule"></geom>
+					<joint axis="0 1 0" damping="2.881176525408146" name="fshin" pos="0 0 0" range="-1.2 .87" stiffness="116.71686635527192" type="hinge"></joint>
+					<geom axisangle="0 1 0 -.6" name="fshin" pos=".065 0 -.09" rgba="0.9 0.6 0.6 1" size="0.044889255253613446 0.10136372197365891" type="capsule"></geom>
 					<body name="ffoot" pos=".13 0 -.18">
-						<joint axis="0 1 0" damping="1.5360287153882586" name="ffoot" pos="0 0 0" range="-.5 .5" stiffness="62.076816510172236" type="hinge"></joint>
-						<geom axisangle="0 1 0 -.6" name="ffoot" pos=".045 0 -.07" rgba="0.9 0.6 0.6 1" size="0.04421959995842853 0.07073980653443633" type="capsule"></geom>
+						<joint axis="0 1 0" damping="1.5144246430501211" name="ffoot" pos="0 0 0" range="-.5 .5" stiffness="60.910084133402265" type="hinge"></joint>
+						<geom axisangle="0 1 0 -.6" name="ffoot" pos=".045 0 -.07" rgba="0.9 0.6 0.6 1" size="0.04421244240943 0.06702779437535408" type="capsule"></geom>
 					</body>
 				</body>
 			</body>

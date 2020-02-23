@@ -2,7 +2,7 @@
 <mujoco model="humanoid">
 	<compiler angle="degree" inertiafromgeom="true"></compiler>
 	<default>
-		<joint armature="1" damping="0.980085918497664" limited="true"></joint>
+		<joint armature="1" damping="0.9640242375316381" limited="true"></joint>
 		<geom conaffinity="1" condim="1" contype="1" margin="0.001" material="geom" rgba="0.8 0.6 .4 1"></geom>
 		<motor ctrllimited="true" ctrlrange="-.4 .4"></motor>
 	</default>
@@ -20,67 +20,67 @@
 	</asset>
 	<worldbody>
 		<light cutoff="100" diffuse="1 1 1" dir="-0 0 -1.3" directional="true" exponent="1" pos="0 0 1.3" specular=".1 .1 .1"></light>
-		<geom condim="3" friction="0.9573456678860701 0.10358866642866359 0.10083903045944789" material="MatPlane" name="floor" pos="0 0 0" rgba="0.8 0.9 0.8 1" size="19.16475809475245 20.087693116435386 0.12697816353300187" type="plane"></geom>
+		<geom condim="3" friction="0.9882997122709611 0.10225984256578398 0.10323709053120599" material="MatPlane" name="floor" pos="0 0 0" rgba="0.8 0.9 0.8 1" size="20.65645625612577 19.144590021974018 0.12564912888356988" type="plane"></geom>
 		<body name="torso" pos="0 0 1.4">
 			<camera name="track" mode="trackcom" pos="0 -4 0" xyaxes="1 0 0 0 0 1"></camera>
 			<joint armature="0" damping="0.0" limited="false" name="root" pos="0 0 0" stiffness="0.0" type="free"></joint>
-			<geom fromto="0 -.07 0 0 .07 0" name="torso1" size="0.07244020045264164" type="capsule"></geom>
-			<geom name="head" pos="0 0 .19" size="0.09278731032861322" type="sphere" user="258"></geom>
-			<geom fromto="-.01 -.06 -.12 -.01 .06 -.12" name="uwaist" size="0.06070788247737845" type="capsule"></geom>
+			<geom fromto="0 -.07 0 0 .07 0" name="torso1" size="0.06713277837249092" type="capsule"></geom>
+			<geom name="head" pos="0 0 .19" size="0.08590014827008742" type="sphere" user="258"></geom>
+			<geom fromto="-.01 -.06 -.12 -.01 .06 -.12" name="uwaist" size="0.06101210502233217" type="capsule"></geom>
 			<body name="lwaist" pos="-.01 0 -0.260" quat="1.000 0 -0.002 0">
-				<geom fromto="0 -.06 0 0 .06 0" name="lwaist" size="0.0571225406551342" type="capsule"></geom>
-				<joint armature="0.02" axis="0 0 1" damping="5.06203599300978" name="abdomen_z" pos="0 0 0.065" range="-45 45" stiffness="20.451549570424675" type="hinge"></joint>
-				<joint armature="0.02" axis="0 1 0" damping="5.108267749044019" name="abdomen_y" pos="0 0 0.065" range="-75 30" stiffness="9.71786371404116" type="hinge"></joint>
+				<geom fromto="0 -.06 0 0 .06 0" name="lwaist" size="0.06185752160026018" type="capsule"></geom>
+				<joint armature="0.02" axis="0 0 1" damping="4.763557948985315" name="abdomen_z" pos="0 0 0.065" range="-45 45" stiffness="19.07341312304066" type="hinge"></joint>
+				<joint armature="0.02" axis="0 1 0" damping="4.7782892727633" name="abdomen_y" pos="0 0 0.065" range="-75 30" stiffness="9.887963318325083" type="hinge"></joint>
 				<body name="pelvis" pos="0 0 -0.165" quat="1.000 0 -0.002 0">
-					<joint armature="0.02" axis="1 0 0" damping="5.198147274815216" name="abdomen_x" pos="0 0 0.1" range="-35 35" stiffness="9.696080599482592" type="hinge"></joint>
-					<geom fromto="-.02 -.07 0 -.02 .07 0" name="butt" size="0.09015410073697415" type="capsule"></geom>
+					<joint armature="0.02" axis="1 0 0" damping="5.1122865468336" name="abdomen_x" pos="0 0 0.1" range="-35 35" stiffness="9.908288835493067" type="hinge"></joint>
+					<geom fromto="-.02 -.07 0 -.02 .07 0" name="butt" size="0.08704444814637388" type="capsule"></geom>
 					<body name="right_thigh" pos="0 -0.1 -0.04">
-						<joint armature="0.01" axis="1 0 0" damping="4.967716696453119" name="right_hip_x" pos="0 0 0" range="-25 5" stiffness="10.047519850735025" type="hinge"></joint>
-						<joint armature="0.01" axis="0 0 1" damping="5.144968223186391" name="right_hip_z" pos="0 0 0" range="-60 35" stiffness="10.485902349691294" type="hinge"></joint>
-						<joint armature="0.0080" axis="0 1 0" damping="4.906650445354193" name="right_hip_y" pos="0 0 0" range="-110 20" stiffness="20.092133749524464" type="hinge"></joint>
-						<geom fromto="0 0 0 0 0.01 -.34" name="right_thigh1" size="0.05775082549836428" type="capsule"></geom>
+						<joint armature="0.01" axis="1 0 0" damping="4.772493142696388" name="right_hip_x" pos="0 0 0" range="-25 5" stiffness="9.543134490151377" type="hinge"></joint>
+						<joint armature="0.01" axis="0 0 1" damping="5.106298684285017" name="right_hip_z" pos="0 0 0" range="-60 35" stiffness="10.269906192354668" type="hinge"></joint>
+						<joint armature="0.0080" axis="0 1 0" damping="5.2490157495918925" name="right_hip_y" pos="0 0 0" range="-110 20" stiffness="20.245343648808802" type="hinge"></joint>
+						<geom fromto="0 0 0 0 0.01 -.34" name="right_thigh1" size="0.05834935331397298" type="capsule"></geom>
 						<body name="right_shin" pos="0 0.01 -0.403">
 							<joint armature="0.0060" axis="0 -1 0" name="right_knee" pos="0 0 .02" range="-160 -2" type="hinge"></joint>
-							<geom fromto="0 0 0 0 0 -.3" name="right_shin1" size="0.050410453007475584" type="capsule"></geom>
+							<geom fromto="0 0 0 0 0 -.3" name="right_shin1" size="0.04904954079575221" type="capsule"></geom>
 							<body name="right_foot" pos="0 0 -0.45">
-								<geom name="right_foot" pos="0 0 0.1" size="0.07802491595968539" type="sphere" user="0"></geom>
+								<geom name="right_foot" pos="0 0 0.1" size="0.07548202871414006" type="sphere" user="0"></geom>
 							</body>
 						</body>
 					</body>
 					<body name="left_thigh" pos="0 0.1 -0.04">
-						<joint armature="0.01" axis="-1 0 0" damping="5.09656701098036" name="left_hip_x" pos="0 0 0" range="-25 5" stiffness="10.388557876835891" type="hinge"></joint>
-						<joint armature="0.01" axis="0 0 -1" damping="5.178973420301966" name="left_hip_z" pos="0 0 0" range="-60 35" stiffness="10.411034671082557" type="hinge"></joint>
-						<joint armature="0.01" axis="0 1 0" damping="4.817349967489843" name="left_hip_y" pos="0 0 0" range="-110 20" stiffness="20.56777859449147" type="hinge"></joint>
-						<geom fromto="0 0 0 0 -0.01 -.34" name="left_thigh1" size="0.06156917215140873" type="capsule"></geom>
+						<joint armature="0.01" axis="-1 0 0" damping="4.939107814309567" name="left_hip_x" pos="0 0 0" range="-25 5" stiffness="10.196676556051521" type="hinge"></joint>
+						<joint armature="0.01" axis="0 0 -1" damping="4.786461786597635" name="left_hip_z" pos="0 0 0" range="-60 35" stiffness="10.155074228605956" type="hinge"></joint>
+						<joint armature="0.01" axis="0 1 0" damping="5.192433934532204" name="left_hip_y" pos="0 0 0" range="-110 20" stiffness="19.292292918715255" type="hinge"></joint>
+						<geom fromto="0 0 0 0 -0.01 -.34" name="left_thigh1" size="0.05708380166796478" type="capsule"></geom>
 						<body name="left_shin" pos="0 -0.01 -0.403">
-							<joint armature="0.0060" axis="0 -1 0" name="left_knee" pos="0 0 .02" range="-160 -2" stiffness="0.9637938435661004" type="hinge"></joint>
-							<geom fromto="0 0 0 0 0 -.3" name="left_shin1" size="0.04764287014362561" type="capsule"></geom>
+							<joint armature="0.0060" axis="0 -1 0" name="left_knee" pos="0 0 .02" range="-160 -2" stiffness="1.0101296265370787" type="hinge"></joint>
+							<geom fromto="0 0 0 0 0 -.3" name="left_shin1" size="0.049869674831814696" type="capsule"></geom>
 							<body name="left_foot" pos="0 0 -0.45">
-								<geom name="left_foot" type="sphere" size="0.07512022768255819" pos="0 0 0.1" user="0"></geom>
+								<geom name="left_foot" type="sphere" size="0.07458455067657345" pos="0 0 0.1" user="0"></geom>
 							</body>
 						</body>
 					</body>
 				</body>
 			</body>
 			<body name="right_upper_arm" pos="0 -0.17 0.06">
-				<joint armature="0.0068" axis="2 1 1" name="right_shoulder1" pos="0 0 0" range="-85 60" stiffness="1.0312612278984035" type="hinge"></joint>
-				<joint armature="0.0051" axis="0 -1 1" name="right_shoulder2" pos="0 0 0" range="-85 60" stiffness="1.0350177566407655" type="hinge"></joint>
-				<geom fromto="0 0 0 .16 -.16 -.16" name="right_uarm1" size="0.0403377847156042 0.15770221563193096" type="capsule"></geom>
+				<joint armature="0.0068" axis="2 1 1" name="right_shoulder1" pos="0 0 0" range="-85 60" stiffness="0.9703032386763994" type="hinge"></joint>
+				<joint armature="0.0051" axis="0 -1 1" name="right_shoulder2" pos="0 0 0" range="-85 60" stiffness="0.9512567174187265" type="hinge"></joint>
+				<geom fromto="0 0 0 .16 -.16 -.16" name="right_uarm1" size="0.04193315185356627 0.1592180099619339" type="capsule"></geom>
 				<body name="right_lower_arm" pos=".18 -.18 -.18">
 					<joint armature="0.0028" axis="0 -1 1" name="right_elbow" pos="0 0 0" range="-90 50" stiffness="0.0" type="hinge"></joint>
-					<geom fromto="0.01 0.01 0.01 .17 .17 .17" name="right_larm" size="0.031482423615656875" type="capsule"></geom>
-					<geom name="right_hand" pos=".18 .18 .18" size="0.04016098789178226" type="sphere"></geom>
+					<geom fromto="0.01 0.01 0.01 .17 .17 .17" name="right_larm" size="0.031944050298927974" type="capsule"></geom>
+					<geom name="right_hand" pos=".18 .18 .18" size="0.04113191222744474" type="sphere"></geom>
 					<camera pos="0 0 0"></camera>
 				</body>
 			</body>
 			<body name="left_upper_arm" pos="0 0.17 0.06">
-				<joint armature="0.0068" axis="2 -1 1" name="left_shoulder1" pos="0 0 0" range="-60 85" stiffness="0.9840047417714971" type="hinge"></joint>
-				<joint armature="0.0051" axis="0 1 1" name="left_shoulder2" pos="0 0 0" range="-60 85" stiffness="1.0337569520798549" type="hinge"></joint>
-				<geom fromto="0 0 0 .16 .16 -.16" name="left_uarm1" size="0.041298439998941915 0.16767853693848708" type="capsule"></geom>
+				<joint armature="0.0068" axis="2 -1 1" name="left_shoulder1" pos="0 0 0" range="-60 85" stiffness="1.010421913318464" type="hinge"></joint>
+				<joint armature="0.0051" axis="0 1 1" name="left_shoulder2" pos="0 0 0" range="-60 85" stiffness="1.0073593373033707" type="hinge"></joint>
+				<geom fromto="0 0 0 .16 .16 -.16" name="left_uarm1" size="0.03829390582904524 0.1631258189320713" type="capsule"></geom>
 				<body name="left_lower_arm" pos=".18 .18 -.18">
 					<joint armature="0.0028" axis="0 -1 -1" name="left_elbow" pos="0 0 0" range="-90 50" stiffness="0.0" type="hinge"></joint>
-					<geom fromto="0.01 -0.01 0.01 .17 -.17 .17" name="left_larm" size="0.03057891992315115" type="capsule"></geom>
-					<geom name="left_hand" pos=".18 -.18 .18" size="0.04158205591443965" type="sphere"></geom>
+					<geom fromto="0.01 -0.01 0.01 .17 -.17 .17" name="left_larm" size="0.030271886434986225" type="capsule"></geom>
+					<geom name="left_hand" pos=".18 -.18 .18" size="0.03998252894510248" type="sphere"></geom>
 				</body>
 			</body>
 		</body>

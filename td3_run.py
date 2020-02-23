@@ -263,8 +263,8 @@ def load_and_plot():
 SAMPLES = 40
 
 env_dict = {}
-env_dict['pendulum'] = ('Pendulum-v0', None, 3, 1)
 env_dict['swimmer'] = ('Swimmer-v3', 'mod_envs/swimmer/', 8, 2)
+env_dict['pendulum'] = ('Pendulum-v0', None, 3, 1)
 env_dict['hopper'] = ('Hopper-v3', 'mod_envs/hopper/', 11, 3)
 env_dict['halfcheetah'] = ('HalfCheetah-v3', 'mod_envs/halfcheetah/' , 17, 6)
 env_dict['ant'] = ('Ant-v3', 'mod_envs/ant/', 111, 8)
