@@ -8,7 +8,7 @@ from hyperparams import ACTION_NOISE, OFF_POLICY_BATCH_SIZE as BATCH_SIZE, DISCO
 from hyperparams import *
 from env import Env#, Walker2dEnv_Mod
 # from models import Actor, Critic, create_target_network, update_target_network
-from generalized_models import Actor, Critic, create_target_network, update_target_network
+from generalized_models import Actor, SoftActor, Critic, create_target_network, update_target_network
 from utils import *
 from gradient_penalty import gradient_penalty
 import optuna
@@ -22,6 +22,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--task', type=str, default='')
 # parser.add_argument('--penalty', type=bool, default=True)
 parser.add_argument('--no_penalty', default=True, action='store_false', help='Bool type')
+parser.add_argument('--algorithm', type=str, default='sac')
 args = parser.parse_args()
 
 # MAX_STEPS = 15000
@@ -35,12 +36,34 @@ def test(actor):
     state, done, total_reward = env.reset(), False, 0
     # while not done:
     for i in range(1000):
-      action = torch.clamp(actor(state), min=-1, max=1)  # Use purely exploitative policy at test time
+      a=actor(state)
+      if type(a) != torch.Tensor:
+        a = a.mean
+      action = torch.clamp(a, min=-1, max=1)  # Use purely exploitative policy at test time
       state, reward, done = env.step(action)
       total_reward += reward
       if done: 
         break
     return total_reward
+
+
+def test_worst_case(actor, critic_1, critic_2):
+  env = Env(env_name)
+  state, done, total_reward = env.reset(), False, 0
+  for i in range(1000):
+    a=actor(state)
+    if type(a) != torch.Tensor:
+      a = a.mean
+    action = torch.clamp(a, min=-1, max=1)  # Use purely exploitative policy at test time
+    g1 = action_gradient(critic_1, state, action, epsilon=.1)
+    g2 = action_gradient(critic_2, state, action, epsilon=.1)
+    bad_action = action-(g1+g2)/2
+    state, reward, done = env.step(action)
+    total_reward += reward
+    if done: 
+      break
+  return total_reward
+
 
 def test_transfer(actor, path):
   if path is not None:
@@ -55,7 +78,10 @@ def test_transfer(actor, path):
         # env.modify(filename)
         state, done, total_reward = env.reset(), False, 0
         for i in range(1000):
-          action = torch.clamp(actor(state), min=-1, max=1)  # Use purely exploitative policy at test time
+          a=actor(state)
+          if type(a) != torch.Tensor:
+            a = a.mean
+          action = torch.clamp(a, min=-1, max=1)  # Use purely exploitative policy at test time
           state, reward, done = env.step(action)
           total_reward += reward
           if done: 
@@ -67,7 +93,7 @@ def test_transfer(actor, path):
     return 0
 
 
-def train_td3(penalty = False, epsilon=.02, actor_LEARNING_RATE=LEARNING_RATE*.62, critic_LEARNING_RATE=LEARNING_RATE, h = HIDDEN_SIZE):
+def train_td3(penalty = False, epsilon=.02, actor_LEARNING_RATE=LEARNING_RATE, critic_LEARNING_RATE=LEARNING_RATE, h = HIDDEN_SIZE):
   env = Env(env_name)
 
   actor = Actor(h, stochastic=False, layer_norm=True, state_dim=state_dim, action_dim=action_dim).to(DEVICE)
@@ -159,6 +185,102 @@ def train_td3(penalty = False, epsilon=.02, actor_LEARNING_RATE=LEARNING_RATE*.6
   return rewards, transfer_rewards#, steps
 
 
+def train_sac(penalty = True, epsilon=.03):
+  env = Env(env_name)
+  actor = SoftActor(HIDDEN_SIZE, state_dim=state_dim, action_dim=action_dim).to(DEVICE)
+  critic_1 = Critic(HIDDEN_SIZE, state_action=True, state_dim=state_dim, action_dim=action_dim).to(DEVICE)
+  critic_2 = Critic(HIDDEN_SIZE, state_action=True, state_dim=state_dim, action_dim=action_dim).to(DEVICE)
+  value_critic = Critic(HIDDEN_SIZE, state_dim=state_dim, action_dim=action_dim).to(DEVICE)
+  target_value_critic = create_target_network(value_critic).to(DEVICE)
+  actor_optimiser = optim.Adam(actor.parameters(), lr=LEARNING_RATE)
+  critics_optimiser = optim.Adam(list(critic_1.parameters()) + list(critic_2.parameters()), lr=LEARNING_RATE)
+  value_critic_optimiser = optim.Adam(value_critic.parameters(), lr=LEARNING_RATE)
+  D = deque(maxlen=REPLAY_SIZE)
+
+  steps = []
+  rewards = []
+  transfer_rewards = []
+
+  state, done = env.reset(), False
+  pbar = tqdm(range(1, MAX_STEPS + 1), unit_scale=1, smoothing=0)
+  for step in pbar:
+    with torch.no_grad():
+      if step < UPDATE_START:
+        # To improve exploration take actions sampled from a uniform random distribution over actions at the start of training
+        action = env.sample_action()
+      else:
+        # Observe state s and select action a ~ μ(a|s)
+        action = actor(state).sample()
+      # Execute a in the environment and observe next state s', reward r, and done signal d to indicate whether s' is terminal
+      next_state, reward, done = env.step(action)
+      # Store (s, a, r, s', d) in replay buffer D
+      D.append({'state': state, 'action': action, 'reward': torch.tensor([reward], device=DEVICE), 'next_state': next_state, 'done': torch.tensor([done], dtype=torch.float32, device=DEVICE)})
+      state = next_state
+      # If s' is terminal, reset environment state
+      if done:
+        state = env.reset()
+
+    if step > UPDATE_START and step % UPDATE_INTERVAL == 0:
+      # Randomly sample a batch of transitions B = {(s, a, r, s', d)} from D
+      batch = random.sample(D, BATCH_SIZE)
+      batch = {k: torch.cat([d[k] for d in batch], dim=0) for k in batch[0].keys()}
+
+      # Compute targets for Q and V functions
+      if penalty:
+        tvc = gradient_penalty(target_value_critic, batch['next_state'])
+      else:
+        tvc = target_value_critic(batch['next_state'])
+
+      y_q = batch['reward'] + DISCOUNT * (1 - batch['done']) * tvc
+      policy = actor(batch['state'])
+      action = policy.rsample()  # a(s) is a sample from μ(·|s) which is differentiable wrt θ via the reparameterisation trick
+      weighted_sample_entropy = ENTROPY_WEIGHT * policy.log_prob(action).sum(dim=1)  # Note: in practice it is more numerically stable to calculate the log probability when sampling an action to avoid inverting tanh
+      if penalty:
+        c1 = gradient_penalty(critic_1, batch['state'], action.detach())
+        c2 = gradient_penalty(critic_2, batch['state'], action.detach())
+      else:
+        c1 = critic_1(batch['state'], action.detach())
+        c2 = critic_2(batch['state'], action.detach())
+
+      y_v = torch.min(c1, c2) - weighted_sample_entropy.detach()
+
+      # Update Q-functions by one step of gradient descent
+      # pdb.set_trace()
+      value_loss = (critic_1(batch['state'], batch['action']) - y_q).pow(2).mean() + (critic_2(batch['state'], batch['action']) - y_q).pow(2).mean()
+      critics_optimiser.zero_grad()
+      value_loss.backward()
+      critics_optimiser.step()
+
+      # Update V-function by one step of gradient descent
+      value_loss = (value_critic(batch['state']) - y_v).pow(2).mean()
+      value_critic_optimiser.zero_grad()
+      value_loss.backward()
+      value_critic_optimiser.step()
+
+      # Update policy by one step of gradient ascent
+      policy_loss = (weighted_sample_entropy - critic_1(batch['state'], action)).mean()
+      actor_optimiser.zero_grad()
+      policy_loss.backward()
+      actor_optimiser.step()
+
+      # Update target value network
+      update_target_network(value_critic, target_value_critic, POLYAK_FACTOR)
+
+    if step > UPDATE_START and step % TEST_INTERVAL == 0:
+      actor.eval()
+      total_reward = test(actor)
+      total_transfer_reward = test_transfer(actor, path)
+      # if not MULTIPROCESSING:
+      pbar.set_description('Step: %i | Reward: %f | Transfer Reward: %f' % (step, total_reward, total_transfer_reward))
+      steps.append(step)
+      rewards.append(total_reward)
+      transfer_rewards.append(total_transfer_reward)
+      # plot(step, total_reward, 'sac' + ('_penalty' if penalty else ''))
+      actor.train()
+  return rewards, transfer_rewards
+
+
+
 def objective(trial):
   epsilon = trial.suggest_loguniform('epsilon', .01, .1)
   actor_scaling = trial.suggest_loguniform('actor_scaling', .5, 2.)
@@ -180,29 +302,40 @@ def evaluate(penalty=True):
   train_rewards = []
   test_rewards = []
   title = 'td3_'+env_name+('_penalty' if penalty else '')
+  if args.algorithm=='td3':
+    train_alg=train_td3
+  elif args.algorithm=='sac':
+    train_alg=train_sac
+  else:
+    print('training algorithm not found')
+    assert False
 
   if MULTIPROCESSING:
     p = mp.Pool(20)
-    reward_list = print(p.map(train_td3, [(penalty, .025)]*samples))
+    # reward_list = print(p.map(train_td3, [(penalty, .025)]*samples))
+    reward_list = print(p.map(train_alg, [(penalty, .025)]*samples))
     train_rewards = [i[0] for i in reward_list]
     test_rewards = [i[1] for i in reward_list]
     with open('data/' + title + '.pkl', 'wb+') as f:
       pickle.dump((train_rewards, test_rewards), f)
   else:
     for i in range(samples):
-      rewards, transfer_rewards= train_td3(penalty=penalty)#, epsilon=.05)
-      # rewards = transfer_rewards = [random.random() for i in range(UPDATE_START, MAX_STEPS,TEST_INTERVAL)]
       try:
-        with open('data/' + title + '.pkl', 'rb+') as f:
-          train_rewards, test_rewards = pickle.load(f)
+        # rewards, transfer_rewards= train_td3(penalty=penalty)#, epsilon=.05)
+        rewards, transfer_rewards= train_alg(penalty=penalty)#, epsilon=.05)
+        # rewards = transfer_rewards = [random.random() for i in range(UPDATE_START, MAX_STEPS,TEST_INTERVAL)]
+        try:
+          with open('data/' + title + '.pkl', 'rb+') as f:
+            train_rewards, test_rewards = pickle.load(f)
+        except:
+          print('Unable to find data file. Making new one')
+
+        train_rewards.append(rewards)
+        test_rewards.append(transfer_rewards)
+        with open('data/' + title + '.pkl', 'wb+') as f:
+          pickle.dump((train_rewards, test_rewards), f)
       except:
-        print('Unable to find data file. Making new one')
-
-      train_rewards.append(rewards)
-      test_rewards.append(transfer_rewards)
-      with open('data/' + title + '.pkl', 'wb+') as f:
-        pickle.dump((train_rewards, test_rewards), f)
-
+        print("Training broke :/")
 
   #recursive averaging
   ave = lambda tr: np.mean(np.array(tr))
@@ -234,37 +367,13 @@ def compare():
   multiplot(steps_list, train_rewards, labels, 'td3 '+env_name+' same environment')
   multiplot(steps_list, test_rewards, labels, 'td3 '+env_name+' modified environment')
 
-def load_and_plot():
-  steps = [i for i in range(UPDATE_START, MAX_STEPS,TEST_INTERVAL)]
-  steps_list = [steps]*2  
-  penalty = True
-  title = 'td3_'+env_name+('_penalty' if penalty else '')
-  with open('data/' + title + '.pkl', 'rb+') as f:
-    p_train, p_test = pickle.load(f)
 
 
-  penalty = False
-  title = 'td3_'+env_name+('_penalty' if penalty else '')
-  with open('data/' + title + '.pkl', 'rb+') as f:
-    no_p_train, no_p_test = pickle.load(f)
-
-    
-
-  train_rewards = [p_train, no_p_train]
-  test_rewards = [p_test, no_p_test]
-  train_rewards = np.array([p_train, no_p_train])
-  test_rewards = np.array([p_test, no_p_test])
-  labels = ['Our method', 'Baseline']
-
-  multiplot(steps_list, train_rewards, labels, 'td3 '+env_name+' same environment')
-  multiplot(steps_list, test_rewards, labels, 'td3 '+env_name+' modified environment')
-
-
-SAMPLES = 40
+SAMPLES = 20
 
 env_dict = {}
-env_dict['swimmer'] = ('Swimmer-v3', 'mod_envs/swimmer/', 8, 2)
-env_dict['pendulum'] = ('Pendulum-v0', None, 3, 1)
+#env_dict['swimmer'] = ('Swimmer-v3', 'mod_envs/swimmer/', 8, 2)
+#env_dict['pendulum'] = ('Pendulum-v0', None, 3, 1)
 env_dict['hopper'] = ('Hopper-v3', 'mod_envs/hopper/', 11, 3)
 env_dict['halfcheetah'] = ('HalfCheetah-v3', 'mod_envs/halfcheetah/' , 17, 6)
 env_dict['ant'] = ('Ant-v3', 'mod_envs/ant/', 111, 8)
@@ -279,7 +388,7 @@ for desc in env_dict.values():
     fn = sorted(filenames, key = lambda x: len(x))
     xml_file = fn[0]
     print(fn[0])
-    randomize_xml(xml_file, scale=0.05, count=4)
+    randomize_xml(xml_file, scale=0.3, count=4)
 
 if args.task =='':
   # OPTIMZE = True
