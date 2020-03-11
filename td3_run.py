@@ -50,20 +50,41 @@ def test(actor):
 def test_worst_case(actor, critic_1, critic_2):
   env = Env(env_name)
   state, done, total_reward = env.reset(), False, 0
+  epsilon = .03
   for i in range(1000):
     a=actor(state)
     if type(a) != torch.Tensor:
       a = a.mean
-    action = torch.clamp(a, min=-1, max=1)  # Use purely exploitative policy at test time
+      # Use purely exploitative policy at test time
     g1 = action_gradient(critic_1, state, action, epsilon=.1)
     g2 = action_gradient(critic_2, state, action, epsilon=.1)
-    bad_action = action-(g1+g2)/2
+    bad_action = action-(g1+g2)/2*epsilon
+    action = torch.clamp(bad_action, min=-1, max=1)
     state, reward, done = env.step(action)
     total_reward += reward
     if done: 
       break
   return total_reward
 
+
+def test_action_noise(actor):
+  for i in range(4):
+    sigma = .03
+    with torch.no_grad():
+      env = Env(env_name)
+      state, done, total_reward = env.reset(), False, 0
+      # while not done:
+      for i in range(1000):
+        s = np.random.normal(0, sigma, action_dim)
+        a=actor(state) + s
+        if type(a) != torch.Tensor:
+          a = a.mean
+        action = torch.clamp(a, min=-1, max=1)  # Use purely exploitative policy at test time
+        state, reward, done = env.step(action)
+        total_reward += reward
+        if done: 
+          break
+      return total_reward
 
 def test_transfer(actor, path):
   if path is not None:
@@ -200,6 +221,10 @@ def train_sac(penalty = True, epsilon=.03):
   steps = []
   rewards = []
   transfer_rewards = []
+  # worst_case_rewards = []
+
+  # test_functions = 
+  # reward_categories = []
 
   state, done = env.reset(), False
   pbar = tqdm(range(1, MAX_STEPS + 1), unit_scale=1, smoothing=0)
@@ -234,7 +259,10 @@ def train_sac(penalty = True, epsilon=.03):
       y_q = batch['reward'] + DISCOUNT * (1 - batch['done']) * tvc
       policy = actor(batch['state'])
       action = policy.rsample()  # a(s) is a sample from μ(·|s) which is differentiable wrt θ via the reparameterisation trick
-      weighted_sample_entropy = ENTROPY_WEIGHT * policy.log_prob(action).sum(dim=1)  # Note: in practice it is more numerically stable to calculate the log probability when sampling an action to avoid inverting tanh
+      log_probs = policy.log_prob(action)
+      NaNMask = (log_probs!=log_probs)
+      log_probs[NaNMask] = 0
+      weighted_sample_entropy = ENTROPY_WEIGHT * log_probs.sum(dim=1)  # Note: in practice it is more numerically stable to calculate the log probability when sampling an action to avoid inverting tanh
       if penalty:
         c1 = gradient_penalty(critic_1, batch['state'], action.detach())
         c2 = gradient_penalty(critic_2, batch['state'], action.detach())
@@ -260,8 +288,13 @@ def train_sac(penalty = True, epsilon=.03):
       # Update policy by one step of gradient ascent
       policy_loss = (weighted_sample_entropy - critic_1(batch['state'], action)).mean()
       actor_optimiser.zero_grad()
-      policy_loss.backward()
-      actor_optimiser.step()
+      if (policy_loss != policy_loss).all():
+        #check if any values are NaN
+        print("NaN found")
+        pass
+      else:
+        policy_loss.backward()
+        actor_optimiser.step()
 
       # Update target value network
       update_target_network(value_critic, target_value_critic, POLYAK_FACTOR)
@@ -369,7 +402,7 @@ def compare():
 
 
 
-SAMPLES = 20
+SAMPLES = 10
 
 env_dict = {}
 #env_dict['swimmer'] = ('Swimmer-v3', 'mod_envs/swimmer/', 8, 2)

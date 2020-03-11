@@ -43,7 +43,7 @@ class TanhNormal(Distribution):
 class SoftActor(nn.Module):
   def __init__(self, hidden_size, state_dim=3, action_dim=1):
     super().__init__()
-    self.log_std_min, self.log_std_max = -20, 2  # Constrain range of standard deviations to prevent very deterministic/stochastic policies
+    self.log_std_min, self.log_std_max = -20/action_dim, 2  # Constrain range of standard deviations to prevent very deterministic/stochastic policies
     layers = [nn.Linear(state_dim, hidden_size), nn.Tanh(), nn.Linear(hidden_size, hidden_size), nn.Tanh(), nn.Linear(hidden_size, 2*action_dim)]
     self.policy = nn.Sequential(*layers)
 
