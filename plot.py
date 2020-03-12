@@ -69,19 +69,19 @@ def multiplot(steps_list, rewards_list, label_list, title):
   
   plt.xlabel('Steps')
   plt.ylabel('Rewards')
-  # from scipy.signal import savgol_filter
-  # window=9
-  # m = savgol_filter(means, window, 2) # window size 51, polynomial order 3
-  # ci = savgol_filter(conf_ints, window, 2)
+  from scipy.signal import savgol_filter
+  window=9
+  m = savgol_filter(means, window, 2) # window size 51, polynomial order 3
+  ci = savgol_filter(conf_ints, window, 2)
 
 
   for i in range(len(rewards_list)):
     color=color_cycle[i]
-    plt.plot(steps_list[i][:len(means[i])], means[i], color=color, label=label_list[i])
-    plt.fill_between(steps_list[i][:len(means[i])], np.array(means+conf_ints)[i], np.array(means-conf_ints)[i], color=color, alpha=.7)
+    # plt.plot(steps_list[i][:len(means[i])], means[i], color=color, label=label_list[i])
+    # plt.fill_between(steps_list[i][:len(means[i])], np.array(means+conf_ints)[i], np.array(means-conf_ints)[i], color=color, alpha=.7)
 
-    # plt.plot(steps_list[i], m[i], color=color, label=label_list[i])
-    # plt.fill_between(steps_list[i], np.array(m+ci)[i], np.array(m-ci)[i], color=color, alpha=.7)
+    plt.plot(steps_list[i], m[i], color=color, label=label_list[i])
+    plt.fill_between(steps_list[i], np.array(m+ci)[i], np.array(m-ci)[i], color=color, alpha=.7)
 
   plt.legend()
   plt.savefig(os.path.join('results', title + '.png'))

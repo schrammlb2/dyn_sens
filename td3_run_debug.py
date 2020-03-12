@@ -239,6 +239,8 @@ def train_sac(penalty = True, epsilon=.03):
         # Observe state s and select action a ~ μ(a|s)
         action = actor(state).sample()
       # Execute a in the environment and observe next state s', reward r, and done signal d to indicate whether s' is terminal
+      if (action != action).all():
+        pdb.set_trace()
       next_state, reward, done = env.step(action)
       # Store (s, a, r, s', d) in replay buffer D
       D.append({'state': state, 'action': action, 'reward': torch.tensor([reward], device=DEVICE), 'next_state': next_state, 'done': torch.tensor([done], dtype=torch.float32, device=DEVICE)})
@@ -359,22 +361,21 @@ def evaluate(penalty=True):
       pickle.dump((train_rewards, test_rewards), f)
   else:
     for i in range(samples):
+    
+      # rewards, transfer_rewards= train_td3(penalty=penalty)#, epsilon=.05)
+      rewards, transfer_rewards= train_alg(penalty=penalty)#, epsilon=.05)
+      # rewards = transfer_rewards = [random.random() for i in range(UPDATE_START, MAX_STEPS,TEST_INTERVAL)]
       try:
-        # rewards, transfer_rewards= train_td3(penalty=penalty)#, epsilon=.05)
-        rewards, transfer_rewards= train_alg(penalty=penalty)#, epsilon=.05)
-        # rewards = transfer_rewards = [random.random() for i in range(UPDATE_START, MAX_STEPS,TEST_INTERVAL)]
-        try:
-          with open('data/' + title + '.pkl', 'rb+') as f:
-            train_rewards, test_rewards = pickle.load(f)
-        except:
-          print('Unable to find data file. Making new one')
-
-        train_rewards.append(rewards)
-        test_rewards.append(transfer_rewards)
-        with open('data/' + title + '.pkl', 'wb+') as f:
-          pickle.dump((train_rewards, test_rewards), f)
+        with open('data/' + title + '.pkl', 'rb+') as f:
+          train_rewards, test_rewards = pickle.load(f)
       except:
-        print("Training broke :/")
+        print('Unable to find data file. Making new one')
+
+      train_rewards.append(rewards)
+      test_rewards.append(transfer_rewards)
+      with open('data/' + title + '.pkl', 'wb+') as f:
+        pickle.dump((train_rewards, test_rewards), f)
+    
 
   #recursive averaging
   ave = lambda tr: np.mean(np.array(tr))

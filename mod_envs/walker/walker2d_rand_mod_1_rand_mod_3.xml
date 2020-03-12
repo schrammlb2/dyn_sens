@@ -2,40 +2,40 @@
 <mujoco model="walker2d">
 	<compiler angle="degree" coordinate="global" inertiafromgeom="true"></compiler>
 	<default>
-		<joint armature="0.01" damping="0.10063065369177111" limited="true"></joint>
-		<geom conaffinity="0" condim="3" contype="1" density="1000" friction="0.537253505344479 0.08890263419440869 0.1160295164729579" rgba="0.8 0.6 .4 1"></geom>
+		<joint armature="0.01" damping="0.11779012268258127" limited="true"></joint>
+		<geom conaffinity="0" condim="3" contype="1" density="1000" friction="0.587919008943405 0.11853979495244592 0.07190352298223036" rgba="0.8 0.6 .4 1"></geom>
 	</default>
 	<option integrator="RK4" timestep="0.002"></option>
 	<worldbody>
 		<light cutoff="100" diffuse="1 1 1" dir="-0 0 -1.3" directional="true" exponent="1" pos="0 0 1.3" specular=".1 .1 .1"></light>
-		<geom conaffinity="1" condim="3" name="floor" pos="0 0 0" rgba="0.8 0.9 0.8 1" size="40.492511867286396 28.174983954635216 45.96349596032128" type="plane" material="MatPlane"></geom>
+		<geom conaffinity="1" condim="3" name="floor" pos="0 0 0" rgba="0.8 0.9 0.8 1" size="36.51254491649661 50.84915338398629 34.68858788540117" type="plane" material="MatPlane"></geom>
 		<body name="torso" pos="0 0 1.25">
 			<camera name="track" mode="trackcom" pos="0 -3 1" xyaxes="1 0 0 0 0 1"></camera>
 			<joint armature="0" axis="1 0 0" damping="0.0" limited="false" name="rootx" pos="0 0 0" stiffness="0.0" type="slide"></joint>
 			<joint armature="0" axis="0 0 1" damping="0.0" limited="false" name="rootz" pos="0 0 0" ref="1.25" stiffness="0.0" type="slide"></joint>
 			<joint armature="0" axis="0 1 0" damping="0.0" limited="false" name="rooty" pos="0 0 1.25" stiffness="0.0" type="hinge"></joint>
-			<geom friction="0.7369138994565715" fromto="0 0 1.45 0 0 1.05" name="torso_geom" size="0.03617921837949175" type="capsule"></geom>
+			<geom friction="1.0152011190014443" fromto="0 0 1.45 0 0 1.05" name="torso_geom" size="0.04575871425856781" type="capsule"></geom>
 			<body name="thigh" pos="0 0 1.05">
 				<joint axis="0 -1 0" name="thigh_joint" pos="0 0 1.05" range="-150 0" type="hinge"></joint>
-				<geom friction="1.0016032716006833" fromto="0 0 1.05 0 0 0.6" name="thigh_geom" size="0.03668442939562816" type="capsule"></geom>
+				<geom friction="0.725849708261713" fromto="0 0 1.05 0 0 0.6" name="thigh_geom" size="0.06793741656358447" type="capsule"></geom>
 				<body name="leg" pos="0 0 0.35">
 					<joint axis="0 -1 0" name="leg_joint" pos="0 0 0.6" range="-150 0" type="hinge"></joint>
-					<geom friction="0.8818921700386253" fromto="0 0 0.6 0 0 0.1" name="leg_geom" size="0.040512845022853454" type="capsule"></geom>
+					<geom friction="0.987401992978626" fromto="0 0 0.6 0 0 0.1" name="leg_geom" size="0.062256593825287636" type="capsule"></geom>
 					<body name="foot" pos="0.2/2 0 0.1">
 						<joint axis="0 -1 0" name="foot_joint" pos="0 0 0.1" range="-45 45" type="hinge"></joint>
-						<geom friction="0.91022430141748" fromto="-0.0 0 0.1 0.2 0 0.1" name="foot_geom" size="0.06317136144563273" type="capsule"></geom>
+						<geom friction="0.7276083639882798" fromto="-0.0 0 0.1 0.2 0 0.1" name="foot_geom" size="0.05542530207314716" type="capsule"></geom>
 					</body>
 				</body>
 			</body>
 			<body name="thigh_left" pos="0 0 1.05">
 				<joint axis="0 -1 0" name="thigh_left_joint" pos="0 0 1.05" range="-150 0" type="hinge"></joint>
-				<geom friction="1.1643203693276396" fromto="0 0 1.05 0 0 0.6" name="thigh_left_geom" rgba=".7 .3 .6 1" size="0.06368898346407988" type="capsule"></geom>
+				<geom friction="0.9816450624378299" fromto="0 0 1.05 0 0 0.6" name="thigh_left_geom" rgba=".7 .3 .6 1" size="0.03968447233559174" type="capsule"></geom>
 				<body name="leg_left" pos="0 0 0.35">
 					<joint axis="0 -1 0" name="leg_left_joint" pos="0 0 0.6" range="-150 0" type="hinge"></joint>
-					<geom friction="0.9136653556474521" fromto="0 0 0.6 0 0 0.1" name="leg_left_geom" rgba=".7 .3 .6 1" size="0.038645702926211556" type="capsule"></geom>
+					<geom friction="0.9206075398407838" fromto="0 0 0.6 0 0 0.1" name="leg_left_geom" rgba=".7 .3 .6 1" size="0.041934311570972445" type="capsule"></geom>
 					<body name="foot_left" pos="0.2/2 0 0.1">
 						<joint axis="0 -1 0" name="foot_left_joint" pos="0 0 0.1" range="-45 45" type="hinge"></joint>
-						<geom friction="1.0020877363664629" fromto="-0.0 0 0.1 0.2 0 0.1" name="foot_left_geom" rgba=".7 .3 .6 1" size="0.04724215786704834" type="capsule"></geom>
+						<geom friction="1.2462555310709462" fromto="-0.0 0 0.1 0.2 0 0.1" name="foot_left_geom" rgba=".7 .3 .6 1" size="0.062475006249485036" type="capsule"></geom>
 					</body>
 				</body>
 			</body>
